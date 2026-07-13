@@ -4,19 +4,26 @@ const env = require("./env");
 mongoose.set("strictQuery", true);
 
 async function connectDB() {
-    const conn = await mongoose.connect(env.mongoUri, {
-        serverSelectionTimeoutMS: 10_000,
-    });
-    console.log(
-        `MongoDB Connected: ${conn.connection.host}/${conn.connection.name}`,
-    );
+    try {
+        const conn = await mongoose.connect(env.mongoUri, {
+            serverSelectionTimeoutMS: 10_000,
+        });
 
-    mongoose.connection.on("error", (err) => {
-        console.error("MongoDB error:", err.message);
-    });
-    mongoose.connection.on("disconnected", () => {
-        console.warn("MongoDB disconnected");
-    });
+        console.log(
+            `MongoDB Connected: ${conn.connection.host}/${conn.connection.name}`
+        );
+
+        mongoose.connection.on("error", (err) => {
+            console.error("MongoDB error:", err.message);
+        });
+
+        mongoose.connection.on("disconnected", () => {
+            console.warn("MongoDB disconnected");
+        });
+    } catch (error) {
+        console.error("Failed to connect to MongoDB:", error.message);
+        process.exit(1);
+    }
 }
 
 module.exports = { connectDB };
