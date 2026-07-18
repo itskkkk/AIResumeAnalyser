@@ -20,7 +20,7 @@ function errorHandler(err, req, res, next) {
         status = 400;
         message = `Invalid ${err.path}: ${err.value}`;
     }else if (err.code === 11000) {
-        status = 400;
+        status = 409;
         message = "Duplicate key";
         details = err.keyValue;
     }else if (err.name === "ZodError") {
