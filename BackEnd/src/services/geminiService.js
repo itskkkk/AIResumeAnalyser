@@ -79,7 +79,7 @@ const responseSchema = {
             description: "One short paragraph overall verdict",
         },
     },
-},
+};
 
 const analysisvalidator = z.object({
     atsScore: z.number().min(0).max(100),
