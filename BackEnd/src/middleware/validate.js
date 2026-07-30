@@ -1,4 +1,3 @@
-const { Schema } = require("mongoose");
 const ApiError = require("../utils/ApiError");
 
 const validate = 
