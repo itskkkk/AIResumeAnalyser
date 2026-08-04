@@ -1,5 +1,5 @@
-const { GoogleGenAI, Type, Language } = require("@google/genai");
-const { z, email, url } = require("zod");
+const { GoogleGenAI, Type } = require("@google/genai");
+const { z } = require("zod");
 
 const env = require("../config/env");
 
