@@ -1,5 +1,5 @@
 const { GoogleGenAI, Type } = require("@google/genai");
-const { z, json } = require("zod");
+const { z } = require("zod");
 
 const env = require("../config/env");
 const ApiError = require("../utils/ApiError");
@@ -36,7 +36,7 @@ const responseSchema = {
             type: Type.ARRAY,
             description: "Exactly 5 prioritized issues",
             items: {
-                type: Type.ARRAY,
+                type: Type.OBJECT,
                 required: ["title", "severity", "explanation", "fix" ],
                 properties: {
                     title: { type: Type.STRING },
