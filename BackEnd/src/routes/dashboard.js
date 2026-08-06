@@ -6,7 +6,6 @@ const { requireAuth } = require("../middleware/auth");
 const Resume = require("../models/Resume");
 const ResumeVersion = require("../models/ResumeVersion");
 const Analysis = require("../models/Analysis");
-const { version } = require("mongoose");
 
 const router = express.Router();
 router.use(requireAuth);
