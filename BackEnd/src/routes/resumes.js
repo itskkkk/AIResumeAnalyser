@@ -144,6 +144,13 @@ router.post(
         if (!versionId) throw ApiError.badRequest("No version to analyze");
         const version = await loadVersion(resume._id, versionId);
 
+        // console.log("========== ANALYZING VERSION ==========");
+        // console.log("Version Number:", version.versionNumber);
+        // console.log("Version ID:", version._id.toString());
+        // console.log("RAW TEXT:");
+        // console.log(version.rawText);
+        // console.log("========================================");
+
         const { analysis, model, promptTokens, responseTokens } =
           await analyzeResume({
             rawText: version.rawText,
@@ -211,45 +218,95 @@ const rewriteBody = z.object({
     label: z.string().trim().max(40).optional(),
 });
 
+function escapeRegExp(text) {
+    return String(text).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
 function applyRewritesToText(rawText, rewrites) {
     let result = rawText;
+
     for (const r of rewrites) {
-        if(!r.original || !r.rewritten) continue;
-        const idx = result.indexOf(r.original);
-        if (idx >= 0) {
-            result = result.slice(0, idx) + r.rewritten + result.slice(idx + r.original.length);
+        if (!r?.original || !r?.rewritten) continue;
+
+        const normalizedOriginal = normalizeText(r.original);
+
+        const words = normalizedOriginal
+            .split(" ")
+            .filter(Boolean)
+            .map(escapeRegExp);
+
+        if (!words.length) continue;
+
+        /*
+         * Allow whitespace/newlines between words.
+         *
+         * Example:
+         *
+         * "using the robust"
+         *
+         * matches:
+         *
+         * "using the
+         * robust"
+         */
+        const pattern = words.join("\\s+");
+
+        const regex = new RegExp(pattern);
+
+        if (regex.test(result)) {
+            result = result.replace(regex, r.rewritten);
+
+            // console.log("✅ REWRITE APPLIED");
+            // console.log("Original:", r.original);
+            // console.log("Rewritten:", r.rewritten);
         } else {
-            result += `\n${r.rewritten}`; 
+            // console.log("❌ ORIGINAL BULLET NOT FOUND");
+            // console.log("Original:", r.original);
         }
     }
+
     return result;
 }
 
-function patchBulletsInSections(sections, rewrites) {
-    if(!sections) return null;
-    const cloned = JSON.parse(JSON.stringify(sections));
-    for (const r of rewrites) {
-        if (!r?.original || !r?.rewritten) continue;;
-        for (const exp of cloned.experience || []) {
-            if(!Array.isArray(exp.bullets)) continue;
-            exp.bullets = exp.bullets.map((b) =>
-                b === r.original ? r.rewritten : b
-            );
-        }
-    }
-    return cloned;
+function normalizeText(text) {
+    return String(text || "")
+        // Remove hyphenation caused by PDF line wrapping
+        .replace(/-\s*\n\s*/g, "")
+
+        // Also handle whitespace around hyphenated words
+        .replace(/-\s+/g, "-")
+
+        // Normalize all remaining whitespace
+        .replace(/\s+/g, " ")
+
+        // Remove bullet symbol
+        .replace(/^[•●▪◦]\s*/, "")
+
+        .trim();
 }
 
-function looksEmpty(sections) {
-    if (!sections) return true;
-    const b = sections.basics || {};
-    const hasIdentity = b.name || b.email || b.title;
-    const hasBody = 
-       sections.summary ||
-       sections.experience?.length ||
-       sections.education?.length ||
-       sections.skills?.length;
-    return !hasIdentity && !hasBody;
+function patchBulletsInSections(sections, rewrites) {
+    if (!sections) return null;
+
+    const cloned = JSON.parse(JSON.stringify(sections));
+
+    for (const r of rewrites) {
+        if (!r?.original || !r?.rewritten) continue;
+
+        const originalNormalized = normalizeText(r.original);
+
+        for (const exp of cloned.experience || []) {
+            if (!Array.isArray(exp.bullets)) continue;
+
+            exp.bullets = exp.bullets.map((bullet) => {
+                return normalizeText(bullet) === originalNormalized
+                    ? r.rewritten
+                    : bullet;
+            });
+        }
+    }
+
+    return cloned;
 }
 
 router.post(
@@ -277,14 +334,15 @@ router.post(
             throw ApiError.badRequest("No rewrites selected to apply");
         }
 
-        const newRaw = applyRewritesToText(baseVersion.rawText, selected);
+        const newRaw = applyRewritesToText(
+            baseVersion.rawText,
+            selected
+        );
 
-        const patchedFromBase = patchBulletsInSections(
+        const finalParsed = patchBulletsInSections(
             baseVersion.parsedSections,
             selected
         );
-        const reparsed = await parseStructured(newRaw);
-        const finalParsed = looksEmpty(reparsed) ? patchedFromBase : reparsed;
 
         const nextNumber = resume.latestVersionNumber + 1;
 
