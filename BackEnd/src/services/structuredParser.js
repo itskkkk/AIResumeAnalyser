@@ -76,10 +76,11 @@ const responseSchema = {
         type: Type.ARRAY,
         items: {
             type: Type.OBJECT,
-            required: ["name", "description"],
+            required: ["name", "description","bullets"],
             properties: {
                 name: { type: Type.STRING },
                 description: { type: Type.STRING },
+                bullets: { type: Type.ARRAY, items: { type: Type.STRING }},
                 tech: { type: Type.ARRAY, items: { type: Type.STRING }},
                 links: { type: Type.ARRAY, items: linkSchema },
             },
@@ -142,6 +143,7 @@ const validator = z.object({
         z.object({
             name: z.string().default(""),
             description: z.string().default(""),
+            bullets: z.array(z.string()).default([]),
             tech: z.array(z.string()).default([]),
             links: 
               z.array(z.object({ label: z.string(), url: z.string() }))
