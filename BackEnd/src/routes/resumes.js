@@ -294,15 +294,49 @@ function patchBulletsInSections(sections, rewrites) {
         if (!r?.original || !r?.rewritten) continue;
 
         const originalNormalized = normalizeText(r.original);
+        let found = false;
 
+        // 1. Experience bullets
         for (const exp of cloned.experience || []) {
             if (!Array.isArray(exp.bullets)) continue;
 
             exp.bullets = exp.bullets.map((bullet) => {
-                return normalizeText(bullet) === originalNormalized
-                    ? r.rewritten
-                    : bullet;
+                if (normalizeText(bullet) === originalNormalized) {
+                    found = true;
+
+                    // console.log("✅ EXPERIENCE BULLET PATCHED");
+                    // console.log("Original:", bullet);
+                    // console.log("Rewritten:", r.rewritten);
+
+                    return r.rewritten;
+                }
+
+                return bullet;
             });
+        }
+
+        // 2. Project bullets
+        for (const project of cloned.projects || []) {
+            if (!Array.isArray(project.bullets)) continue;
+
+            project.bullets = project.bullets.map((bullet) => {
+                if (normalizeText(bullet) === originalNormalized) {
+                    found = true;
+
+                    // console.log("✅ PROJECT BULLET PATCHED");
+                    // console.log("Original:", bullet);
+                    // console.log("Rewritten:", r.rewritten);
+
+                    return r.rewritten;
+                }
+
+                return bullet;
+            });
+        }
+
+        if (!found) {
+            // console.log("❌ PARSED BULLET NOT FOUND");
+            // console.log("AI Original:", r.original);
         }
     }
 
