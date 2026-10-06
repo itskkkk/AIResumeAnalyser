@@ -18,22 +18,22 @@ const C = {
 
 const styles = StyleSheet.create({
   page: {
-    paddingTop: 56,
-    paddingBottom: 56,
-    paddingHorizontal: 56,
+    paddingTop: 30,
+    paddingBottom: 30,
+    paddingHorizontal: 30,
     fontSize: 10.25,
     color: C.ink,
     fontFamily: "Helvetica",
     backgroundColor: C.bg,
-    lineHeight: 1.5,
+    lineHeight: 1.1,
   },
 
   // header
   headerWrap: {
-    marginBottom: 22,
+    marginBottom: 6,
   },
   name: {
-    fontSize: 26,
+    fontSize: 15,
     fontFamily: "Helvetica-Bold",
     letterSpacing: -0.6,
     color: C.ink,
@@ -41,12 +41,12 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   title: {
-    fontSize: 11.5,
+    fontSize: 11,
     fontFamily: "Helvetica",
     color: C.accent,
     letterSpacing: 0.4,
-    lineHeight: 1.3,
-    marginBottom: 12,
+    lineHeight: 1.1,
+    marginBottom: 6,
   },
   contactRow: {
     flexDirection: "row",
@@ -68,19 +68,19 @@ const styles = StyleSheet.create({
     textDecoration: "none",
   },
   rule: {
-    marginTop: 14,
+    marginTop: 6,
     height: 1,
     backgroundColor: C.hairline,
   },
 
   // sections
   section: {
-    marginTop: 18,
+    marginTop: 6,
   },
   sectionHeader: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 10,
+    marginBottom: 6,
   },
   sectionHeaderText: {
     fontSize: 9,
@@ -99,13 +99,13 @@ const styles = StyleSheet.create({
   // summary
   summary: {
     fontSize: 10.25,
-    lineHeight: 1.55,
+    lineHeight: 1.3,
     color: C.ink,
   },
 
   // experience
   expItem: {
-    marginBottom: 14,
+    marginBottom: 6,
   },
   expHeader: {
     flexDirection: "row",
@@ -148,7 +148,7 @@ const styles = StyleSheet.create({
   bulletText: {
     flex: 1,
     fontSize: 10.25,
-    lineHeight: 1.5,
+    lineHeight: 1.3,
     color: C.ink,
   },
 
@@ -181,24 +181,43 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   projHeader: {
-    flexDirection: "row",
-    alignItems: "baseline",
     marginBottom: 2,
   },
   projName: {
     fontSize: 10.75,
     fontFamily: "Helvetica-Bold",
     color: C.ink,
-    marginRight: 8,
+    marginBottom: 1,
   },
   projTech: {
     fontSize: 9.5,
     color: C.accent,
+    marginBottom: 2,
+  },
+  projectBullets: {
+  marginTop: 1,
+  },
+
+  bulletRow: {
+    flexDirection: "row",
+    marginBottom: 2,
+  },
+
+  bulletSymbol: {
+    width: 10,
+    fontSize: 8,
+  },
+
+  bulletText: {
+    flex: 1,
+    fontSize: 9.5,
+    lineHeight: 1.15,
   },
   projDesc: {
     fontSize: 10.25,
     color: C.ink,
-    lineHeight: 1.5,
+    lineHeight: 1.3,
+    marginBottom: 2,
   },
   projLinks: {
     flexDirection: "row",
@@ -216,6 +235,7 @@ const styles = StyleSheet.create({
   skillsGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
+    flex: 1,
   },
   skillChip: {
     fontSize: 9.5,
@@ -269,8 +289,8 @@ const styles = StyleSheet.create({
   footer: {
     position: "absolute",
     bottom: 22,
-    left: 56,
-    right: 56,
+    left: 30,
+    right: 30,
     flexDirection: "row",
     justifyContent: "space-between",
     fontSize: 8.25,
@@ -403,9 +423,21 @@ export function ResumeDocument({ user, version, title }) {
                     <Text style={styles.projTech}>{proj.tech.join(" · ")}</Text>
                   ) : null}
                 </View>
-                {proj.description ? (
+                {/* {proj.description ? (
                   <Text style={styles.projDesc}>{proj.description}</Text>
-                ) : null}
+                ) : null} */}
+                {proj.bullets?.length > 0 && (
+                  <View style={styles.projectBullets}>
+                    {proj.bullets.map((bullet, index) => (
+                      <View key={index} style={styles.bulletRow}>
+                        <Text style={styles.bulletSymbol}>•</Text>
+                        <Text style={styles.bulletText}>
+                          {bullet}
+                        </Text>
+                      </View>
+                    ))}
+                  </View>
+                )}
                 {proj.links?.length ? (
                   <View style={styles.projLinks}>
                     {proj.links.map((l, j) => (
